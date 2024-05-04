@@ -5,7 +5,11 @@
   "main": "out/app.js",
   "scripts": {
     "build": "rm -rf out && rm -f public/app.js && tsc && rollup ./out/app.js --file ./public/app.js --format iife && rm -rf out"
-  },  
+  },
   "author": "robinlant",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "rollup": "^4.17.2",
+    "typescript": "^5.4.5"
+  }
 }
