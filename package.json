@@ -1,0 +1,11 @@
+{
+  "name": "github-actions-playgound",
+  "version": "1.0.0",
+  "description": "nothing special really",
+  "main": "out/app.js",
+  "scripts": {
+    "build": "rm -rf out && rm -f public/app.js && tsc && rollup ./out/app.js --file ./public/app.js --format iife && rm -rf out"
+  },  
+  "author": "robinlant",
+  "license": "ISC"
+}
