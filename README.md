@@ -1,6 +1,7 @@
 #### How to start
 
-- open a terminal with nodejs and docker installed
+open a terminal with nodejs and docker installed and write following commands:
+
 - `git clone git@github.com:robinlant/github-actions-playground.git`
 - `cd github-actions-playground`
 - `npm install`
