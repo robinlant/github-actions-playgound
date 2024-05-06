@@ -1,0 +1,35 @@
+name: Deploy Docker Image from Docker Hub to GCP
+
+on:
+  push:
+    branches: [main, testing-actions]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env: 
+      GCP_PROJ_ID: t-diagram-422507-k9
+      IMAGE_NAME: robinlant/github-actions-playground
+      IMAGE_TAG: latest
+
+    steps:
+      - run: echo "The job was automatically triggered by a ${{ github.event_name }} event"
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ env.GCP_PROJ_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@main
+        with:
+          image: docker.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          service: testing-actions
+          platform: managed
+          region: europe-west1
