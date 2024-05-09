@@ -1,0 +1,90 @@
+name: Deploy to GCP
+
+on:
+  push:
+    branches:  [main, testing-actions]
+
+env:
+  SECRET_KEY: ${{ vars.SECRET_KEY }}
+  ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env: 
+      DOCKER_USERNAME: robinlant
+      DOCKER_TAG: latest
+
+    steps:
+    - run: echo "The job was automatically triggered by a ${{ github.event_name }} event"
+
+    - name: Check out the repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build the project
+      run: npm run build
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ env.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ github.Repository }}:${{ env.DOCKER_TAG }}
+
+    - name: Logout from Docker Hub
+      run: docker logout
+
+      deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    env:
+      GCP_PROJ_ID: t-diagram-422507-k9
+      IMAGE_NAME: robinlant/github-actions-playground
+      IMAGE_TAG: latest
+      INSTANCE_IP: 34.32.26.88
+      SSH_USERNAME: mtarasovets
+
+    steps:
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v0.3.0
+        with:
+          project_id: ${{ env.GCP_PROJ_ID }}
+          service_account_key: ${{ secrets.GSP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install SSH client
+        run: sudo apt-get update && sudo apt-get install -y openssh-client
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ${{ env.INSTANCE_IP }} >> ~/.ssh/known_hosts
+
+      - name: SSH and Pull Docker Image
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ env.SSH_USERNAME }}@${{ env.INSTANCE_IP }} "docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+
+      - name: Run Docker Container
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ env.SSH_USERNAME }}@${{ env.INSTANCE_IP }} "docker run -d -p 80:80 ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
