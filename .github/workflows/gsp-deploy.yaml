@@ -14,13 +14,14 @@ jobs:
       IMAGE_TAG: latest
 
     steps:
-      - run: echo "The job was automatically triggered by a ${{ github.event_name }} event"
+      - name: Echo Event Name
+        run: echo "The job was automatically triggered by a ${{ github.event_name }} event"
 
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Log in to GSP
-      - uses: 'google-github-actions/auth@v2'
+      - name: Log in to GCP
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
