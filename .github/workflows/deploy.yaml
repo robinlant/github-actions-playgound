@@ -55,6 +55,7 @@ jobs:
       IMAGE_TAG: latest
       INSTANCE_IP: 34.32.26.88
       SSH_USERNAME: mtarasovets
+      CONTAINER_NAME: container-name
 
     steps:
       - name: Set up gcloud CLI
@@ -81,6 +82,10 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa ${{ env.SSH_USERNAME }}@${{ env.INSTANCE_IP }} "docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
 
+      - name: Stop container ${{ env.CONTAINER_NAME }}
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ env.SSH_USERNAME }}@${{ env.INSTANCE_IP }} "docker rm -f ${{ env.CONTAINER_NAME }}"
+
       - name: Run Docker Container
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ env.SSH_USERNAME }}@${{ env.INSTANCE_IP }} "docker run -d -p 80:80 ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+          ssh -i ~/.ssh/id_rsa ${{ env.SSH_USERNAME }}@${{ env.INSTANCE_IP }} "docker run -d --name ${{ env.CONTAINER_NAME }} -p 80:80 ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
