@@ -12,6 +12,7 @@ jobs:
       GCP_PROJ_ID: t-diagram-422507-k9
       IMAGE_NAME: robinlant/github-actions-playground
       IMAGE_TAG: latest
+      GCP_SERVICE_NAME: counter
 
     steps:
       - name: Echo Event Name
@@ -29,6 +30,7 @@ jobs:
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           image: docker.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          service: testing-actions
-          platform: managed
-          region: europe-west1
+          service: ${{ env.GCP_SERVICE_NAME }}
+
+      - name: 'Use output'
+        run: 'curl "${{ steps.deploy.outputs.url }}"'
