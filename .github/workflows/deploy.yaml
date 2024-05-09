@@ -4,10 +4,6 @@ on:
   push:
     branches:  [main, testing-actions]
 
-env:
-  SECRET_KEY: ${{ vars.SECRET_KEY }}
-  ENVIRONMENT: ${{ vars.ENVIRONMENT }}
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -16,7 +12,7 @@ jobs:
       DOCKER_TAG: latest
 
     steps:
-    - run: echo "The job was automatically triggered by a ${{ github.event_name }} event"
+    - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
 
     - name: Check out the repository
       uses: actions/checkout@v3
@@ -44,12 +40,12 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ github.Repository }}:${{ env.DOCKER_TAG }}
+        tags: ${{ github.repository }}:${{ env.DOCKER_TAG }}
 
     - name: Logout from Docker Hub
       run: docker logout
 
-      deploy:
+  deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
 
