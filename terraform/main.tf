@@ -34,7 +34,5 @@ resource "google_compute_instance" "main"{
       sudo apt-get install -y docker.io
       sudo systemctl start docker
       sudo systemctl enable docker
-      sudo getent group docker || sudo groupadd docker
-      sudo usermod -aG docker $USER
     EOF
 }
