@@ -1,43 +1,40 @@
-terraform {
-  required_providers {
-    google = {
-        source  = "hashicorp/google"
-        version = "4.51.0"
-    }
-  }
+resource "google_compute_address" "main"{
+    name = "counter"
+    network_tier = "PREMIUM"
 }
 
-provider "google" {
-  project = "t-diagram-422507-k9"
-  region  = "europe-west10-a"
-}
+resource "google_compute_instance" "main"{
+    name = "main-server"
+    machine_type = "e2-medium"
+    zone = var.zone
 
-resource "google_compute_instance" "server" {
-  name         = "instance-20240509-084748"
-  machine_type = "e2-medium"
-  zone         = "europe-west10-a"
-
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-12-bookworm-v20240415"
+    boot_disk {
+        initialize_params {
+          image = "debian-cloud/debian-11"
+        }
     }
-  }
 
-  network_interface {
-    network = "default"
-    subnetwork = "default"
+    network_interface {
+      network = "default"
 
-    access_config {
-      nat_ip       = "34.32.26.88"
-      network_tier = "PREMIUM"
+      access_config {
+        nat_ip = google_compute_address.main.address
+      }
     }
-  }
 
-  service_account {
-    email  = "github-actions-deploy@t-diagram-422507-k9.iam.gserviceaccount.com"
-    scopes = ["cloud-platform"]
-  }
+    tags = ["http-server", "https-server"]
 
+    metadata = {
+      ssh-keys = var.ssh-key
+    }
 
-  tags = ["http-server", "https-server"]
+    metadata_startup_script = <<-EOF
+      #!/bin/bash
+      sudo apt-get update
+      sudo apt-get install -y docker.io
+      sudo systemctl start docker
+      sudo systemctl enable docker
+      sudo getent group docker || sudo groupadd docker
+      sudo usermod -aG docker $USER
+    EOF
 }
